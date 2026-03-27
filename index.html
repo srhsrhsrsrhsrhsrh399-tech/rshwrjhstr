@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ToolsHub</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at top left, #3b82f6, transparent 40%),
+              radial-gradient(circle at bottom right, #6366f1, transparent 40%),
+              linear-gradient(135deg, #020617, #020617);
+  color: white;
+  overflow-x: hidden;
+}
+
+/* HEADER */
+header {
+  margin: 20px;
+  padding: 15px 30px;
+  border-radius: 15px;
+  background: rgba(255,255,255,0.05);
+  backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+}
+
+.brand {
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: 3px;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(90deg,#ffffff,#7ee8ff);
+  -webkit-background-clip:text;
+  color: transparent;
+  text-shadow:0 0 10px rgba(0,255,255,.8);
+}
+
+/* RIGHT SIDE */
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.search-box {
+  padding: 8px 15px;
+  border-radius: 20px;
+  border: none;
+  outline: none;
+  background: rgba(255,255,255,0.1);
+  color: white;
+}
+
+nav a {
+  margin-left: 15px;
+  text-decoration: none;
+  color: #e2e8f0;
+}
+
+/* HERO */
+.hero {
+  text-align: center;
+  padding: 140px 20px;
+}
+
+.hero p {
+  font-size: 28px;
+  font-weight: 600;
+  background: linear-gradient(270deg, #38bdf8, #6366f1, #a855f7);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* TOOLS */
+.section {
+  padding: 20px;
+}
+
+.tools {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 25px;
+}
+
+.card {
+  background: rgba(255,255,255,0.05);
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+  transition: 0.3s;
+  text-decoration: none;
+  color: white;
+  display: block;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 0 20px rgba(0,234,255,0.4);
+}
+
+/* LOGO ANIMATION */
+.circuit {
+  position:absolute;
+}
+
+.circuit path{
+  stroke:#00eaff;
+  stroke-width:3;
+  fill:none;
+  stroke-dasharray:300;
+  stroke-dashoffset:300;
+  animation:draw 3s ease forwards;
+  filter:drop-shadow(0 0 8px #00eaff);
+}
+
+@keyframes draw{
+  to{stroke-dashoffset:0;}
+}
+
+.gear{
+  width:65px;
+  height:65px;
+}
+
+.gear svg{
+  width:100%;
+  height:100%;
+  animation:spin 6s linear infinite;
+  filter:drop-shadow(0 0 10px cyan);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.hero .logo{
+  flex-direction:column;
+  justify-content:center;
+  margin-bottom:30px;
+  position:relative;
+}
+
+.hero .brand{
+  font-size:70px;
+  letter-spacing:6px;
+  opacity:0;
+  transform:translateY(30px);
+  animation:textReveal 1.2s ease forwards;
+  animation-delay:2.4s;
+}
+
+@keyframes textReveal{
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">
+  </div>
+
+  <div class="header-right">
+    <input type="text" placeholder="Search tools..." class="search-box">
+    
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">Tools</a>
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+
+<div style="display:flex; justify-content:center;">
+<div class="logo">
+
+<svg class="circuit" viewBox="0 0 600 200">
+<path d="M40 100 H200 V40 H300"/>
+<path d="M200 100 V160 H350"/>
+<path d="M350 40 H540 V100"/>
+<path d="M350 160 H540 V100"/>
+</svg>
+
+<div class="brand">
+T
+
+<div class="gear">
+<svg viewBox="0 0 100 100">
+<circle cx="50" cy="50" r="20" fill="#08131f"/>
+<circle cx="50" cy="50" r="40" stroke="#7ee8ff" stroke-width="6" fill="none"/>
+</svg>
+</div>
+
+<div class="gear">
+<svg viewBox="0 0 100 100">
+<circle cx="50" cy="50" r="20" fill="#08131f"/>
+<circle cx="50" cy="50" r="40" stroke="#7ee8ff" stroke-width="6" fill="none"/>
+</svg>
+</div>
+
+l Kit
+</div>
+
+</div>
+</div>
+
+<p>Fast, Easy & Free Tools for Everyone</p>
+
+</section>
+
+<!-- TOOLS SECTION -->
+<section class="section">
+  <h2 style="text-align:center;">Popular Tools</h2>
+
+  <div class="tools">
+
+    <a href="age calculator.html" class="card">⏳ Age Calculator</a>
+
+    <a href="file converter.html" class="card">⚡ File Converter</a>
+
+    <a href="gst calculator.html" class="card">💰 GST Calculator</a>
+
+    <a href="Image Compressor.html" class="card">🖼️ Image Compressor</a>
+
+    <a href="loan calculator.html" class="card">🏦 Loan Calculator</a>
+
+  </div>
+</section>
+
+</body>
+</html>
