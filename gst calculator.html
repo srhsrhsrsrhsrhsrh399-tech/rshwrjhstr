@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Premium GST Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin:0; padding:0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+  body, html {
+    height: 100%;
+    width: 100%;
+    background: #0a1a2f;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  canvas {
+    position: fixed;
+    top:0;
+    left:0;
+    width: 100%;
+    height: 100%;
+    z-index:1;
+  }
+
+  .container {
+    position: relative;
+    z-index: 10;
+    background: rgba(0,0,0,0.65);
+    padding: 40px 30px;
+    border-radius: 20px;
+    width: 360px;
+    text-align: center;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+  }
+
+  h2 {
+    font-size: 26px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #00ffff;
+    text-shadow: 0 0 8px #00ffff;
+  }
+
+  label {
+    display: block;
+    text-align: left;
+    margin: 5px 0 5px 3px;
+    font-weight: 500;
+    color: #00ffff;
+    text-shadow: 0 0 4px #00ffff;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 14px 16px;
+    margin: 12px 0;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    outline: none;
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+  }
+
+  select option { color:#000; background:#fff; }
+  input::placeholder, select::placeholder { color: rgba(255,255,255,0.6); }
+  input:focus, select:focus { background: rgba(255,255,255,0.15); box-shadow: 0 0 12px #00ffff; }
+
+  button {
+    width: 100%;
+    padding: 14px;
+    margin-top: 15px;
+    border-radius: 12px;
+    border: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    background: linear-gradient(90deg, #00ffff, #0072ff);
+    cursor: pointer;
+    box-shadow: 0 6px 20px rgba(0,255,255,0.5);
+  }
+  button:hover { transform: translateY(-2px); box-shadow: 0 8px 25px rgba(0,255,255,0.7); }
+
+  .result {
+    margin-top: 20px;
+    padding: 14px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.1);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.3);
+    font-weight: 600;
+    font-size: 16px;
+    color: #00ffff;
+    min-height: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    text-shadow: 0 0 6px #00ffff;
+  }
+</style>
+</head>
+<body>
+
+<canvas id="particleCanvas"></canvas>
+
+<div class="container">
+  <h2>GST Calculator</h2>
+
+  <label for="price">Enter Price ₹</label>
+  <input type="number" id="price" placeholder="Enter price" min="0">
+
+  <label for="gstRate">GST Percentage</label>
+  <select id="gstRate">
+    <option value="5">5%</option>
+    <option value="12">12%</option>
+    <option value="18">18%</option>
+    <option value="28">28%</option>
+  </select>
+
+  <label for="type">GST Type</label>
+  <select id="type">
+    <option value="add">Add GST</option>
+    <option value="inclusive">Inclusive GST</option>
+  </select>
+
+  <button onclick="calculateGST()">Calculate</button>
+
+  <div class="result" id="result"></div>
+</div>
+
+<script>
+// GST Calculation
+function calculateGST() {
+  const price = parseFloat(document.getElementById('price').value);
+  const gstRate = parseFloat(document.getElementById('gstRate').value);
+  const type = document.getElementById('type').value;
+  let resultText = '';
+
+  if (isNaN(price) || price < 0) {
+    resultText = 'Please enter a valid price.';
+  } else {
+    if (type === 'add') {
+      const gstAmount = (price * gstRate) / 100;
+      const total = price + gstAmount;
+      resultText = `GST: ₹${gstAmount.toFixed(2)}<br>Total Price: ₹${total.toFixed(2)}`;
+    } else {
+      const basePrice = price / (1 + gstRate / 100);
+      const gstAmount = price - basePrice;
+      resultText = `Base Price: ₹${basePrice.toFixed(2)}<br>GST: ₹${gstAmount.toFixed(2)}`;
+    }
+  }
+  document.getElementById('result').innerHTML = resultText;
+}
+
+// Particle system
+const canvas = document.getElementById('particleCanvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let mouse = { x: null, y: null };
+window.addEventListener('mousemove', (e) => { mouse.x = e.x; mouse.y = e.y; });
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random()*canvas.width;
+    this.y = Math.random()*canvas.height;
+    this.size = 5 + Math.random()*8;
+    this.speedX = (Math.random()-0.5)*0.5;
+    this.speedY = (Math.random()-0.5)*0.5;
+    this.color = 'rgba(0,255,255,0.7)';
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+
+    // Cursor repulsion
+    if(mouse.x && mouse.y){
+      const dx = this.x - mouse.x;
+      const dy = this.y - mouse.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if(dist < 100){ this.x += dx/dist*2; this.y += dy/dist*2; }
+    }
+
+    if(this.x<0 || this.x>canvas.width || this.y<0 || this.y>canvas.height) this.reset();
+  }
+  draw(){
+    ctx.beginPath();
+    ctx.arc(this.x,this.y,this.size,0,Math.PI*2);
+    ctx.fillStyle=this.color;
+    ctx.shadowColor='#00ffff';
+    ctx.shadowBlur=8;
+    ctx.fill();
+  }
+}
+
+let particlesArray=[];
+for(let i=0;i<80;i++) particlesArray.push(new Particle());
+
+function animate(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  particlesArray.forEach(p=>{ p.update(); p.draw(); });
+  requestAnimationFrame(animate);
+}
+animate();
+
+window.addEventListener('resize',()=>{
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+});
+</script>
+</body>
+</html>

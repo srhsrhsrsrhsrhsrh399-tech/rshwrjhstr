@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon File Converter</title>
+
+<style>
+*{box-sizing:border-box;}
+
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(270deg,#0f2027,#203a43,#2c5364,#1c2b36);
+  background-size:400% 400%;
+  animation:bgMove 12s ease infinite;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  color:#fff;
+  overflow:hidden;
+}
+
+@keyframes bgMove{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+body::before, body::after{
+  content:"";
+  position:absolute;
+  width:300px;
+  height:300px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(0,255,255,0.15), transparent);
+  animation:float 10s infinite alternate;
+}
+
+body::after{
+  width:200px;
+  height:200px;
+  right:10%;
+  bottom:10%;
+  animation-duration:12s;
+}
+
+@keyframes float{
+  from{transform:translateY(0px);}
+  to{transform:translateY(-50px);}
+}
+
+.converter{
+  width:520px;
+  max-width:95%;
+  padding:30px;
+  border-radius:20px;
+  backdrop-filter:blur(20px);
+  background:rgba(255,255,255,0.08);
+  box-shadow:0 0 40px rgba(0,255,255,0.2);
+  text-align:center;
+  border:1px solid rgba(255,255,255,0.1);
+  position:relative;
+  z-index:2;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  margin-bottom:20px;
+}
+
+.logo-icon{
+  width:40px;
+  height:40px;
+  border-radius:10px;
+  background:#00f7ff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#000;
+}
+
+.logo-text{
+  font-size:20px;
+  font-weight:600;
+  background:linear-gradient(90deg,#00f7ff,#00ff88,#00f7ff);
+  background-size:200%;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  animation:shine 3s linear infinite;
+}
+
+@keyframes shine{
+  from{background-position:0%;}
+  to{background-position:200%;}
+}
+
+.file-drop-area{
+  border:2px dashed #00f7ff;
+  padding:25px;
+  border-radius:15px;
+  cursor:pointer;
+}
+.file-drop-area.dragover{
+  background:rgba(0,255,255,0.2);
+}
+
+.thumbnail{
+  margin-top:15px;
+  max-width:120px;
+  border-radius:10px;
+  display:none;
+  box-shadow:0 0 15px #00f7ff;
+}
+
+.select-wrapper{
+  position:relative;
+  margin-top:15px;
+}
+
+.select-wrapper select{
+  width:100%;
+  padding:12px 40px 12px 12px;
+  border-radius:12px;
+  border:1px solid rgba(0,255,255,0.5);
+  background:rgba(255,255,255,0.08);
+  color:#fff;
+  appearance:none;
+}
+
+.select-wrapper::after{
+  content:"▼";
+  position:absolute;
+  right:12px;
+  top:50%;
+  transform:translateY(-50%);
+  color:#00f7ff;
+}
+
+select option{
+  background:#1e2a33;
+  color:#fff;
+}
+
+button{
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:10px;
+  background:#00f7ff;
+  color:#000;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  box-shadow:0 0 20px #00f7ff;
+}
+
+.progress-container{
+  margin-top:15px;
+  background:rgba(255,255,255,0.1);
+  border-radius:10px;
+  overflow:hidden;
+  display:none;
+}
+.progress-bar{
+  height:12px;
+  width:0%;
+  background:linear-gradient(90deg,#00f7ff,#00ff88);
+}
+
+.result-box{
+  margin-top:18px;
+  padding:14px 16px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  border:1px solid rgba(0,255,255,0.2);
+}
+
+.result-actions{
+  display:flex;
+  gap:8px;
+}
+
+.done-btn{background:#00ff88;}
+.download-btn{background:#00f7ff;}
+</style>
+</head>
+
+<body>
+
+<div class="converter">
+
+<div class="logo">
+  <div class="logo-icon">⚡</div>
+  <div class="logo-text">File Converter</div>
+</div>
+
+<div class="file-drop-area" id="drop">
+  📂 <span id="text">Drag & Drop or Click</span>
+  <input type="file" id="input" hidden>
+</div>
+
+<img id="thumb" class="thumbnail">
+
+<div class="select-wrapper">
+<select id="format">
+  <option>TXT</option>
+  <option>JSON</option>
+  <option>CSV</option>
+  <option>XML</option>
+  <option>JPG</option>
+  <option>PNG</option>
+  <option>WEBP</option>
+</select>
+</div>
+
+<button onclick="convert()">Convert</button>
+
+<div class="progress-container" id="progressBox">
+  <div class="progress-bar" id="progressBar"></div>
+</div>
+
+<div id="result"></div>
+
+</div>
+
+<script>
+let file=null, blob=null;
+
+const input=document.getElementById('input');
+const drop=document.getElementById('drop');
+const text=document.getElementById('text');
+const thumb=document.getElementById('thumb');
+const format=document.getElementById('format');
+const progressBar=document.getElementById('progressBar');
+const progressBox=document.getElementById('progressBox');
+
+drop.onclick=()=>input.click();
+input.onchange=e=>handle(e.target.files);
+
+drop.ondrop=e=>{
+  e.preventDefault();
+  handle(e.dataTransfer.files);
+};
+
+drop.ondragover=e=>e.preventDefault();
+
+function handle(files){
+  file=files[0];
+  if(!file)return;
+  text.textContent=file.name;
+
+  if(file.type.startsWith("image")){
+    const r=new FileReader();
+    r.onload=e=>{
+      thumb.src=e.target.result;
+      thumb.style.display="block";
+    };
+    r.readAsDataURL(file);
+  }else thumb.style.display="none";
+}
+
+function convert(){
+  if(!file) return alert("Select file");
+
+  progressBox.style.display="block";
+  progressBar.style.width="40%";
+
+  const type=format.value;
+
+  // TEXT
+  if(file.type.startsWith("text")){
+    const r=new FileReader();
+    r.onload=e=>{
+      let data=e.target.result;
+
+      if(type==="JSON"){
+        blob=new Blob([JSON.stringify({data})],{type:"application/json"});
+      }
+      else if(type==="CSV"){
+        blob=new Blob([data.replace(/\n/g,",")],{type:"text/csv"});
+      }
+      else if(type==="XML"){
+        const xml=`<root>\n  <data>${data}</data>\n</root>`;
+        blob=new Blob([xml],{type:"application/xml"});
+      }
+      else{
+        blob=new Blob([data],{type:"text/plain"});
+      }
+
+      finish(type.toLowerCase());
+    };
+    r.readAsText(file);
+  }
+
+  // IMAGE
+  else if(file.type.startsWith("image")){
+    const img=new Image();
+    const r=new FileReader();
+
+    r.onload=e=>img.src=e.target.result;
+
+    img.onload=()=>{
+      const c=document.createElement("canvas");
+      c.width=img.width;
+      c.height=img.height;
+      c.getContext("2d").drawImage(img,0,0);
+
+      let mime="image/png";
+      let ext="png";
+
+      if(type==="JPG"){ mime="image/jpeg"; ext="jpg"; }
+      if(type==="WEBP"){ mime="image/webp"; ext="webp"; }
+      if(type==="PNG"){ mime="image/png"; ext="png"; }
+
+      c.toBlob(b=>{
+        blob=b;
+        finish(ext);
+      },mime);
+    };
+
+    r.readAsDataURL(file);
+  }
+
+  else{
+    alert("Unsupported file type");
+  }
+}
+
+function finish(ext){
+  progressBar.style.width="100%";
+
+  const url=URL.createObjectURL(blob);
+
+  document.getElementById('result').innerHTML=`
+    <div class="result-box">
+      <span>File Ready (${ext.toUpperCase()})</span>
+      <div class="result-actions">
+        <button class="done-btn">Done</button>
+        <a href="${url}" download="converted_file.${ext}">
+          <button class="download-btn">Download</button>
+        </a>
+      </div>
+    </div>
+  `;
+}
+</script>
+
+</body>
+</html>

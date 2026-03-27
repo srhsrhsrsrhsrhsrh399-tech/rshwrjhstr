@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fullscreen Image Compressor</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+html, body {
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:flex-start;
+    background: linear-gradient(270deg, #667eea, #764ba2, #f43f5e, #10b981);
+    background-size: 800% 800%;
+    animation: GradientBG 20s ease infinite;
+}
+@keyframes GradientBG {
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+
+/* Floating emojis */
+.emoji {
+    position: absolute;
+    font-size: 30px;
+    opacity: 0.8;
+    user-select: none;
+    pointer-events: none;
+    animation: float linear infinite;
+}
+@keyframes float {
+    0% { transform: translate(0,0) rotate(0deg); }
+    100% { transform: translate(var(--x), var(--y)) rotate(360deg);}
+}
+
+/* Box styling */
+.box {
+    backdrop-filter: blur(20px);
+    background: rgba(255,255,255,0.1);
+    border-radius: 25px;
+    padding:50px 40px 60px 40px;
+    width:90%;
+    max-width:1200px;
+    margin-top:30px;
+    box-shadow:0 20px 40px rgba(0,0,0,0.3);
+    text-align:center;
+    transition:transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 1;
+}
+.box:hover { transform: translateY(-5px); box-shadow:0 25px 50px rgba(0,0,0,0.4); }
+
+/* Drag & drop */
+.drag-drop {
+    border:2px dashed #ffffffaa;
+    border-radius:25px;
+    padding:60px 20px;
+    margin-bottom:25px;
+    cursor:pointer;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    background: rgba(255,255,255,0.1);
+    transition: all 0.3s ease;
+    position:relative;
+}
+.drag-drop p{
+    margin:10px 0 0 0;
+    font-size:20px;
+    font-weight:600;
+    color:#fff;
+    text-align:center;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.drag-drop.dragover{
+    background: rgba(255,255,255,0.2);
+    border-color:#ffffff;
+    box-shadow:0 0 20px #ffffffaa;
+    transform: scale(1.02);
+}
+.drag-drop::before{
+    content:"📁";
+    font-size:60px;
+    color:#fff;
+    margin-bottom:10px;
+}
+input[type="file"]{display:none;}
+
+/* Vertical stack for size input and unit */
+.size-inputs-vertical {
+    display: flex;
+    flex-direction: column; /* vertical */
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.size-inputs-vertical input[type="number"] {
+    width: 150px;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 15px;
+    border: none;
+    outline: none;
+    backdrop-filter: blur(10px);
+    background: rgba(255,255,255,0.25);
+    color: #ffffff;
+    text-align: center;
+}
+.size-inputs-vertical input[type="number"]::placeholder {
+    color: #ffffffcc;
+    font-weight: 500;
+}
+/* Stylish KB/MB dropdown */
+.size-inputs-vertical select {
+    width: 150px;
+    padding: 12px 14px;
+    font-size: 16px;
+    border-radius: 20px;
+    border: none;
+    outline: none;
+    background: linear-gradient(135deg, rgba(255,255,255,0.85), rgba(255,255,255,0.6));
+    color: #000;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+}
+.size-inputs-vertical select:hover {
+    background: linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.75));
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+/* Buttons */
+button{
+    background: linear-gradient(45deg,#667eea,#764ba2,#f43f5e);
+    background-size:200% 200%;
+    color:#fff;
+    border:none;
+    padding:14px 32px;
+    border-radius:15px;
+    cursor:pointer;
+    font-size:16px;
+    font-weight:700;
+    margin-top:15px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.3);
+    transition:all 0.3s ease;
+    animation: gradientBG 5s ease infinite;
+}
+button:hover{
+    transform:translateY(-3px);
+    box-shadow:0 10px 25px rgba(0,0,0,0.4);
+}
+@keyframes gradientBG{
+    0%{background-position:0% 50%}
+    50%{background-position:100% 50%}
+    100%{background-position:0% 50%}
+}
+#downloadBtn{
+    background: linear-gradient(45deg,#10b981,#059669,#3b82f6);
+    background-size:200% 200%;
+    margin-top:20px;
+}
+
+/* Progress bar */
+.progress-container{
+    width:100%;
+    background: rgba(255,255,255,0.2);
+    border-radius:15px;
+    overflow:hidden;
+    margin-top:15px;
+    display:none;
+}
+.progress-bar{
+    height:12px;
+    background: linear-gradient(90deg,#667eea,#f43f5e,#10b981);
+    border-radius:15px;
+    width:0%;
+    transition:width 0.3s ease;
+}
+
+/* Result flex layout */
+.result{
+    margin-top:30px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    width:90%;
+    max-width:1200px;
+    gap:20px;
+    flex-wrap:wrap;
+}
+.result div{
+    flex:1;
+    min-width:250px;
+    text-align:center;
+}
+.result img{
+    width:90%;
+    max-width:400px;
+    max-height:300px;
+    object-fit:contain;
+    border-radius:25px;
+    box-shadow:0 15px 40px rgba(0,0,0,0.5);
+    opacity:0;
+    transition:opacity 0.5s, transform 0.3s;
+}
+.result img.loaded{
+    opacity:1;
+    transform: translateY(0);
+}
+.result img:hover{
+    transform: scale(1.03) translateY(-3px);
+}
+.file-size{
+    font-size:14px;
+    color:#e0e0e0;
+    margin-top:4px;
+}
+</style>
+</head>
+<body>
+
+<div id="emojiContainer"></div>
+
+<div class="box">
+    <label class="drag-drop" id="dragDrop">
+        <p id="dragText">Drag & Drop Your File</p>
+        <input type="file" id="imageInput" accept="image/*">
+    </label>
+
+    <div class="size-inputs-vertical">
+        <input type="number" id="targetSize" placeholder="Enter target size" min="1">
+        <select id="sizeUnit">
+            <option value="kb">KB</option>
+            <option value="mb">MB</option>
+        </select>
+    </div>
+    
+    <button id="compressBtn">Compress Image</button>
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+</div>
+
+<div class="result">
+    <div>
+        <p>Original Image</p>
+        <img id="originalImage" alt="">
+        <div class="file-size" id="originalSize"></div>
+    </div>
+    <div>
+        <p>Compressed Image</p>
+        <img id="compressedImage" alt="">
+        <div class="file-size" id="compressedSize"></div>
+    </div>
+</div>
+
+<button id="downloadBtn" style="display:none;">Download Compressed Image</button>
+
+<script>
+// Floating emojis
+const emojis = ["🖼️","🌆","🌇","🌁"];
+const container = document.getElementById('emojiContainer');
+const numEmojis = 50;
+
+for(let i=0;i<numEmojis;i++){
+    const span = document.createElement('span');
+    span.classList.add('emoji');
+    span.textContent = emojis[Math.floor(Math.random()*emojis.length)];
+    span.style.top = Math.random()*100 + 'vh';
+    span.style.left = Math.random()*100 + 'vw';
+    const xMove = (Math.random()*800-400) + 'px';
+    const yMove = (Math.random()*800-400) + 'px';
+    span.style.setProperty('--x', xMove);
+    span.style.setProperty('--y', yMove);
+    const duration = (5+Math.random()*20) + 's';
+    span.style.animationDuration = duration;
+    container.appendChild(span);
+}
+
+// Image compressor logic
+const imageInput = document.getElementById('imageInput');
+const dragDrop = document.getElementById('dragDrop');
+const dragText = document.getElementById('dragText');
+const originalImage = document.getElementById('originalImage');
+const compressedImage = document.getElementById('compressedImage');
+const downloadBtn = document.getElementById('downloadBtn');
+const targetSizeInput = document.getElementById('targetSize');
+const sizeUnit = document.getElementById('sizeUnit');
+const compressBtn = document.getElementById('compressBtn');
+const progressBar = document.getElementById('progressBar');
+const progressContainer = document.querySelector('.progress-container');
+const originalSize = document.getElementById('originalSize');
+const compressedSize = document.getElementById('compressedSize');
+
+let currentImageData='';
+
+function formatBytes(bytes){
+    if(bytes<1024)return bytes+' B';
+    else if(bytes<1024*1024) return (bytes/1024).toFixed(1)+' KB';
+    else return (bytes/1024/1024).toFixed(2)+' MB';
+}
+
+// Drag & Drop
+dragDrop.addEventListener('click',()=>imageInput.click());
+dragDrop.addEventListener('dragover',(e)=>{e.preventDefault(); dragDrop.classList.add('dragover');});
+dragDrop.addEventListener('dragleave',()=>dragDrop.classList.remove('dragover'));
+dragDrop.addEventListener('drop',(e)=>{
+    e.preventDefault();
+    dragDrop.classList.remove('dragover');
+    const file=e.dataTransfer.files[0];
+    if(!file)return;
+    loadImage(file);
+});
+imageInput.addEventListener('change',function(){
+    const file=this.files[0];
+    if(!file)return;
+    loadImage(file);
+});
+
+function loadImage(file){
+    dragText.textContent=file.name;
+    originalSize.textContent=formatBytes(file.size);
+    const reader=new FileReader();
+    reader.onload=function(e){
+        originalImage.src=e.target.result;
+        originalImage.classList.remove('loaded');
+        setTimeout(()=>originalImage.classList.add('loaded'),50);
+        currentImageData=e.target.result;
+    }
+    reader.readAsDataURL(file);
+}
+
+// Compression
+compressBtn.addEventListener('click',function(){
+    if(!currentImageData)return;
+    const targetValue=parseFloat(targetSizeInput.value);
+    if(!targetValue)return alert('Enter target size!');
+    const targetBytes=sizeUnit.value==='mb'? targetValue*1024*1024:targetValue*1024;
+    compressToTarget(currentImageData,targetBytes);
+});
+
+function compressToTarget(dataUrl,targetBytes){
+    progressContainer.style.display='block';
+    progressBar.style.width='0%';
+    let progress=0;
+    const interval=setInterval(()=>{
+        if(progress>=80){clearInterval(interval);} else{progress+=5; progressBar.style.width=progress+'%';}
+    },50);
+
+    const img=new Image();
+    img.src=dataUrl;
+    img.onload=function(){
+        const canvas=document.createElement('canvas');
+        const maxWidth=1200;
+        const scaleSize=Math.min(1,maxWidth/img.width);
+        canvas.width=img.width*scaleSize;
+        canvas.height=img.height*scaleSize;
+
+        const ctx=canvas.getContext('2d');
+        ctx.drawImage(img,0,0,canvas.width,canvas.height);
+
+        let low=0.1, high=1, mid=0.6, compressedData='';
+        for(let i=0;i<10;i++){
+            mid=(low+high)/2;
+            compressedData=canvas.toDataURL('image/jpeg',mid);
+            const size=Math.round((compressedData.length*3/4));
+            if(size>targetBytes) high=mid; else low=mid;
+        }
+
+        compressedData=canvas.toDataURL('image/jpeg',mid);
+        compressedImage.src=compressedData;
+        compressedImage.classList.remove('loaded');
+        setTimeout(()=>compressedImage.classList.add('loaded'),50);
+
+        const finalSize=Math.round((compressedData.length*3/4));
+        compressedSize.textContent=formatBytes(finalSize);
+
+        downloadBtn.style.display='inline-block';
+        downloadBtn.onclick=function(){
+            const link=document.createElement('a');
+            link.href=compressedData;
+            link.download='compressed_image.jpg';
+            link.click();
+        };
+
+        progressBar.style.width='100%';
+        setTimeout(()=>progressContainer.style.display='none',300);
+    }
+}
+</script>
+</body>
+</html>
